@@ -43,7 +43,7 @@ pipeline {
         echo "Running Binary Compilation..."
         script {
           artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
-                    "generic-files/ariankiller-storage",".","$WORKSPACE","storage.yaml")
+                    "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
                     artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
                     "generic-files/whiz-token/",".","$WORKSPACE","token.yaml")
           // python 
