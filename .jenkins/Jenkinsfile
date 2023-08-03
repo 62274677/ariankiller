@@ -169,11 +169,15 @@ pipeline {
     }
     success {
       echo "***** Execution of all pipeline stages was SUCCESSFUL! *****"
-      discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline SUCCESS", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "https://discord.com/api/webhooks/949049659605786634/u5cOlTqSyarbblv4fO22hhLSWRS3Q0M6T01frVdLucJItvxRSl_-UxwJ3fPRyjZn_-qX"
+      withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+        discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline SUCCESS", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "$DISCORD_WEBHOOK"
+      }
     }
     failure { 
-      discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline FAILED", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "https://discord.com/api/webhooks/949049659605786634/u5cOlTqSyarbblv4fO22hhLSWRS3Q0M6T01frVdLucJItvxRSl_-UxwJ3fPRyjZn_-qX"
       echo "***** Stage(s) in the pipeline has FAILED! *****"
+      withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+        discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline FAILED", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "$DISCORD_WEBHOOK"
+      }
     }
   } 
 }
