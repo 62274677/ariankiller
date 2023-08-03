@@ -45,7 +45,7 @@ pipeline {
           artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
                     "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
                     artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
-                    "generic-files/whiz-token/",".","$WORKSPACE","token.yaml")
+                    "generic-files/whiz-token/","$WORKSPACE","token.yaml")
           // python 
           
         }
