@@ -7,6 +7,7 @@ def buildInfo
 def agentLabel
 
 pipeline { 
+  agent { label 'primary' }
   // Set global timeout value for the entire Pipeline
   options{ timeout(time: 2, unit: 'HOURS') }
   stages {
