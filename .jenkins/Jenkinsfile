@@ -1,5 +1,4 @@
 #!/usr/bin/env groovy
-library("jenkins-dz") _
 
 def runUnitTestResults
 def buildVersion
