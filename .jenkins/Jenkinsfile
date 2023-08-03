@@ -133,12 +133,11 @@ pipeline {
       }
       steps{
         echo "***** Deployment stage START *****"
+        script {
         if (("$BRANCH_NAME" == 'main')) {
             echo "Branch ${BRANCH_NAME} identified. Deploying to server..."
         echo "Deploying..."
-        script {
           deploy()
-        }
         } else if ("$BRANCH_NAME" == 'integration') {
 
         }
@@ -146,6 +145,7 @@ pipeline {
             echo "Not deploying for branch ${BRANCH_NAME}"
         }
 
+        }
       }
       post {
         always {
