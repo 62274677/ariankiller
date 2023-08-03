@@ -15,7 +15,7 @@ pipeline {
       options { timeout(time: 25, unit: 'MINUTES') }
       steps {
         script {
-          loadConfiguration(propertyFile: '.jenkins/Jenkins.properties')
+          loadProps(propertyFile: '.jenkins/Jenkins.properties')
           agentLabel = "$AGENT_LABEL"
         }
       }
