@@ -36,7 +36,7 @@ pipeline {
       agent { label agentLabel }
       when {
         beforeAgent true 
-        expression { "$STAGE_TOGGLES_BUILD" == "true" }
+        expression { "$BUILD_STAGE" == "true" }
       }
       steps{
         echo "***** Build stage START *****"
@@ -71,7 +71,7 @@ pipeline {
               agent { label agentLabel }
               when{ 
                 beforeAgent true
-                expression { "$STAGE_TOGGLES_UNITTEST" == "true" } 
+                expression { "$UNITTEST_STAGE" == "true" } 
               }
               steps{
                 echo "***** Unit Test stage START *****"
@@ -102,7 +102,7 @@ pipeline {
       agent { label agentLabel }
       when { 
         beforeAgent true
-        expression{ "$STAGE_TOGGLES_ARCHIVE" == "true" } 
+        expression{ "$ARCHIVE_STAGE" == "true" } 
       }
       steps{
         echo "***** Nessus Upload stage START *****"
@@ -129,7 +129,7 @@ pipeline {
       agent { label agentLabel }
       when { 
         beforeAgent true
-        expression{ "$STAGE_TOGGLES_DEPLOY" == "true" } 
+        expression{ "$DEPLOY_STAGE" == "true" } 
       }
       steps{
         echo "***** Deployment stage START *****"
