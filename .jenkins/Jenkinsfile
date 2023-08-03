@@ -107,9 +107,9 @@ pipeline {
       steps{
         echo "***** Nessus Upload stage START *****"
         echo "Running script Nessus Upload..."
-        script {          
-          artifactUpload()
-        }
+        // script {          
+          // artifactUpload()
+        // }
       }
       post {
         always {
