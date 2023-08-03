@@ -1,0 +1,183 @@
+#!/usr/bin/env groovy
+
+def runUnitTestResults
+def buildVersion
+def rtServer
+def buildInfo
+def agentLabel
+
+pipeline { 
+  agent { label 'primary' }
+  // Set global timeout value for the entire Pipeline
+  options{ timeout(time: 2, unit: 'HOURS') }
+  stages {
+    stage('Setup'){
+      options { timeout(time: 25, unit: 'MINUTES') }
+      steps {
+        script {
+          loadProps(propertyFile: '.jenkins/Jenkins.properties')
+          agentLabel = "$AGENT_LABEL"
+        }
+      }
+    }
+
+    // stage('Initialize BuildInfo'){
+    //   agent { label agentLabel }
+    //   steps{
+    //     script{
+    //       // Initialize the build info and start collecting
+    //       (rtServer, buildInfo) = initBuildInfo()
+    //     }   
+    //   }
+    // }
+
+    
+    stage('Binary Compilation and Execution Testing'){
+      agent { label agentLabel }
+      when {
+        beforeAgent true 
+        expression { "$BUILD_STAGE" == "true" }
+      }
+      steps{
+        echo "***** Build stage START *****"
+        echo "Running Binary Compilation..."
+        script {
+          artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
+                    "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
+                    artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
+                    "generic-files/whiz-token/","$WORKSPACE","token.yaml")
+          // python 
+          
+        }
+      }
+      post {
+        always {
+          echo "***** Build stage has FINISHED *****"
+        }
+        success {
+          echo "***** Build stage was SUCCESSFUL! *****"
+        }
+        failure {
+          echo "***** Build stage has FAILED! *****"
+        }
+      }
+    }
+    stage('Test'){
+      parallel {
+        
+            
+            stage('Unit Test'){
+              options { skipDefaultCheckout() }
+              agent { label agentLabel }
+              when{ 
+                beforeAgent true
+                expression { "$UNITTEST_STAGE" == "true" } 
+              }
+              steps{
+                echo "***** Unit Test stage START *****"
+                echo "Running Unit Tests..."
+                script{
+                  runUnitTestResults = unitTest("$WORKSPACE/ariankiller_unit_test.py")
+                }
+              }
+              post {
+                always {
+                  echo "***** Unit Test stage has FINISHED *****"
+                }
+                success {
+                  echo "***** Unit Test stage was SUCCESSFUL! *****"
+                }
+                failure {
+                  echo "***** Unit Test stage has FAILED! *****"
+                }
+              }
+            }
+          }
+        
+      
+    }
+    
+    stage('Nessus Upload'){
+      options { skipDefaultCheckout() }
+      agent { label agentLabel }
+      when { 
+        beforeAgent true
+        expression{ "$ARCHIVE_STAGE" == "true" } 
+      }
+      steps{
+        echo "***** Nessus Upload stage START *****"
+        echo "Running script Nessus Upload..."
+        // script {          
+          // artifactUpload()
+        // }
+      }
+      post {
+        always {
+          echo "***** Nessus Upload stage has FINISHED *****"
+        }
+        success {
+          echo "***** Nessus Upload stage was SUCCESSFUL! *****"
+        }
+        failure {
+          echo "***** Nessus Upload stage has FAILED! *****"
+        }
+      }
+    }
+    
+    stage('Deployment'){
+      options { skipDefaultCheckout() }
+      agent { label agentLabel }
+      when { 
+        beforeAgent true
+        expression{ "$DEPLOY_STAGE" == "true" } 
+      }
+      steps{
+        echo "***** Deployment stage START *****"
+        script {
+        if (("$BRANCH_NAME" == 'main')) {
+            echo "Branch ${BRANCH_NAME} identified. Deploying to server..."
+        echo "Deploying..."
+          deploy()
+        } else if ("$BRANCH_NAME" == 'integration') {
+
+        }
+        else {
+            echo "Not deploying for branch ${BRANCH_NAME}"
+        }
+
+        }
+      }
+      post {
+        always {
+          echo "***** Deployment stage has FINISHED *****"
+        }
+        success {
+          echo "***** Deployment stage was SUCCESSFUL! *****"
+        }
+        failure {
+          echo "***** Deployment stage has FAILED! *****"
+        }
+      }
+    }
+  }
+  post { 
+    always {
+      script {
+        echo "***** Pipeline has FINISHED *****"
+        
+      }
+    }
+    success {
+      echo "***** Execution of all pipeline stages was SUCCESSFUL! *****"
+      withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+        discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline SUCCESS", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "$DISCORD_WEBHOOK"
+      }
+    }
+    failure { 
+      echo "***** Stage(s) in the pipeline has FAILED! *****"
+      withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD_WEBHOOK')]) {
+        discordSend description: "*Jenkins **Pipeline Build***", footer: "Pipeline FAILED", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "$DISCORD_WEBHOOK"
+      }
+    }
+  } 
+}
