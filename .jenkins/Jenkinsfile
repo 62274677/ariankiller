@@ -32,36 +32,71 @@ pipeline {
     // }
 
     
-    stage('Binary Compilation and Execution Testing'){
-      agent { label agentLabel }
-      when {
-        beforeAgent true 
-        expression { "$BUILD_STAGE" == "true" }
-      }
-      steps{
-        echo "***** Build stage START *****"
-        echo "Running Binary Compilation..."
-        script {
-          artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
+    stage('Docker Build and Execution Testing'){
+			parallel{
+			stage("Execution Test"){
+      		agent { label agentLabel }
+      		when {
+        		beforeAgent true 
+        		expression { "$EXECUTION_STAGE" == "true" }
+      		}
+      		steps{
+        		echo "***** Execution stage START *****"
+        		echo "Running Execution Testing..."
+        		script {
+          		artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
                     "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
                     artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
                     "generic-files/whiz-token/","$WORKSPACE","token.yaml")
-          // python 
+           	sh "python ${WORKSPACE}/ariankiller.py"
           
-        }
-      }
-      post {
-        always {
-          echo "***** Build stage has FINISHED *****"
-        }
-        success {
-          echo "***** Build stage was SUCCESSFUL! *****"
-        }
-        failure {
-          echo "***** Build stage has FAILED! *****"
-        }
-      }
-    }
+        		}
+      		}
+      		post {
+        		always {
+         		 echo "***** Execution stage has FINISHED *****"
+        		}
+        		success {
+        		  echo "***** Execution stage was SUCCESSFUL! *****"
+       		 }
+       		 failure {
+        		  echo "***** Execution stage has FAILED! *****"
+      		  }
+    		  }
+  		  }
+		}
+		}
+		stage("Docker Build"){
+		agent { label agentLabel }
+      		when {
+        		beforeAgent true 
+        		expression { "$BUILD_STAGE" == "true" }
+      		}
+      		steps{
+        		echo "***** Docker Build stage START *****"
+        		echo "Running Docker Build..."
+        		script {
+										artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
+                    "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
+                    artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
+                    "generic-files/whiz-token/","$WORKSPACE","token.yaml")
+						
+					}
+				}			
+		}
+					post {
+        		always {
+         		 echo "***** Docker Build stage has FINISHED *****"
+        		}
+        		success {
+        		  echo "***** Docker Build stage was SUCCESSFUL! *****"
+       		 }
+       		 failure {
+        		  echo "***** Docker Build stage has FAILED! *****"
+      		  }
+    		  }
+
+}
     stage('Test'){
       parallel {
         
