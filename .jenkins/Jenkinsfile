@@ -46,7 +46,7 @@ pipeline {
         		script {
           		artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
                     "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
-                    artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
+            artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
                     "generic-files/whiz-token/","$WORKSPACE","token.yaml")
            	sh "python ${WORKSPACE}/ariankiller.py"
           
@@ -65,7 +65,7 @@ pipeline {
     		  }
   		  }
 		}
-		}
+		
 		stage("Docker Build"){
 		agent { label agentLabel }
       		when {
@@ -76,11 +76,11 @@ pipeline {
         		echo "***** Docker Build stage START *****"
         		echo "Running Docker Build..."
         		script {
-										artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
+						artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse","jenkins",
                     "generic-files/ariankiller-storage","$WORKSPACE","storage.yaml")
-                    artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
+            artifactDownload("http://192.168.0.21:8081/service/rest/repository/browse/","jenkins",
                     "generic-files/whiz-token/","$WORKSPACE","token.yaml")
-						
+						sh "docker build $WORKSPACE/Dockerfile"
 					}
 				}			
 		}
@@ -95,7 +95,7 @@ pipeline {
         		  echo "***** Docker Build stage has FAILED! *****"
       		  }
     		  }
-
+}
 }
     stage('Test'){
       parallel {
